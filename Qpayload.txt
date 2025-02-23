@@ -1,4 +1,7 @@
 QPBulkUpload
+ExamMgmt
+QpaperMgmt
+CAS
 DatabaseManager_QPBFile
 Admin_QPaperDoc
 QPMasterSuite
